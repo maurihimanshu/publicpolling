@@ -1,0 +1,28 @@
+.add-content-page {
+    min-height: calc(100vh - 200px);
+    padding: 3rem 0;
+}
+
+.page-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.error-message {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: #fca5a5;
+    padding: 1rem 1.5rem;
+    border-radius: 1rem;
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.error-icon {
+    font-size: 1.5rem;
+}

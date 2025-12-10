@@ -1,0 +1,34 @@
+.rating-stars {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.star {
+    filter: grayscale(1) opacity(0.3);
+    transition: all 0.2s;
+}
+
+.star.filled {
+    filter: grayscale(0) opacity(1);
+}
+
+.rating-stars.interactive .star {
+    cursor: pointer;
+}
+
+.rating-stars.interactive .star:hover {
+    transform: scale(1.2);
+    filter: grayscale(0) opacity(1);
+}
+
+.rating-stars.small .star {
+    font-size: 1rem;
+}
+
+.rating-stars.medium .star {
+    font-size: 1.5rem;
+}
+
+.rating-stars.large .star {
+    font-size: 2rem;
+}

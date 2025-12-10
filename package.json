@@ -1,0 +1,25 @@
+{
+    "name": "entertainment-hub-monorepo",
+    "version": "1.0.0",
+    "private": true,
+    "description": "Micro-frontends architecture for entertainment listing platform",
+    "workspaces": [
+        "apps/*"
+    ],
+    "scripts": {
+        "dev": "concurrently \"npm run dev:shell\" \"npm run dev:viewer\" \"npm run dev:manager\"",
+        "dev:shell": "cd apps/shell && npm run dev",
+        "dev:viewer": "cd apps/public-viewer && npm run dev",
+        "dev:manager": "cd apps/content-manager && npm run dev",
+        "install:all": "npm install && cd apps/shell && npm install && cd ../public-viewer && npm install && cd ../content-manager && npm install",
+        "build:all": "cd apps/shell && npm run build && cd ../public-viewer && npm run build && cd ../content-manager && npm run build",
+        "clean": "rm -rf node_modules apps/*/node_modules apps/*/dist"
+    },
+    "devDependencies": {
+        "concurrently": "^8.2.2"
+    },
+    "engines": {
+        "node": ">=18.0.0",
+        "npm": ">=9.0.0"
+    }
+}

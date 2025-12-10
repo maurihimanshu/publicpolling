@@ -1,0 +1,4 @@
+.edit-content-page {
+    min-height: calc(100vh - 200px);
+    padding: 3rem 0;
+}
