@@ -10,7 +10,6 @@ import {
     updateProfile
 } from 'firebase/auth';
 import { auth } from '../config/firebase';
-import { getAuthFromStorage, listenToAuthChanges } from '../utils/authSync';
 
 const AuthContext = createContext({});
 
@@ -27,28 +26,48 @@ export const AuthProvider = ({ children }) => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        // First, try to get auth from localStorage (from shell app)
-        const storedAuth = getAuthFromStorage();
-        if (storedAuth) {
-            setUser(storedAuth);
+        console.log('[Public-Viewer] AuthProvider initializing...');
+
+        // Listen for auth state from shell
+        const handleMessage = (event) => {
+            // Verify origin (shell is on port 3000)
+            if (event.origin !== 'http://localhost:3000') return;
+
+            if (event.data?.type === 'AUTH_STATE') {
+                console.log('[Public-Viewer] Received AUTH_STATE:', event.data.user);
+                setUser(event.data.user);
+                setLoading(false);
+            }
+        };
+
+        window.addEventListener('message', handleMessage);
+
+        // Request auth state from shell (Handshake)
+        console.log('[Public-Viewer] Sending AUTH_REQUEST to shell');
+        try {
+            window.parent.postMessage({ type: 'AUTH_REQUEST' }, 'http://localhost:3000');
+        } catch (e) {
+            console.warn('[Public-Viewer] Failed to post message to parent:', e);
         }
-        setLoading(false);
 
-        // Listen for auth changes from shell app
-        const unsubscribe = listenToAuthChanges((authData) => {
-            setUser(authData);
-        });
-
-        // Also listen to Firebase auth changes (in case user logs in directly)
+        // Allow direct Firebase login as fallback
         const firebaseUnsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
             if (firebaseUser && !user) {
+                console.log('[Public-Viewer] Firebase auth detected:', firebaseUser.email);
                 setUser(firebaseUser);
+                setLoading(false);
             }
         });
 
+        // Timeout to stop loading if no auth received
+        const timeout = setTimeout(() => {
+            if (loading) setLoading(false);
+        }, 3000);
+
         return () => {
-            unsubscribe();
+            window.removeEventListener('message', handleMessage);
             firebaseUnsubscribe();
+            clearTimeout(timeout);
         };
     }, []);
 

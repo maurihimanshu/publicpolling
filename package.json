@@ -12,6 +12,7 @@
         "dev:viewer": "cd apps/public-viewer && npm run dev",
         "dev:manager": "cd apps/content-manager && npm run dev",
         "install:all": "npm install && cd apps/shell && npm install && cd ../public-viewer && npm install && cd ../content-manager && npm install",
+        "build": "npm run build:all",
         "build:all": "cd apps/shell && npm run build && cd ../public-viewer && npm run build && cd ../content-manager && npm run build",
         "clean": "rm -rf node_modules apps/*/node_modules apps/*/dist"
     },

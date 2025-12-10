@@ -10,7 +10,6 @@ import {
     updateProfile
 } from 'firebase/auth';
 import { auth } from '../config/firebase';
-import { getAuthFromStorage, listenToAuthChanges } from '../utils/authSync';
 
 const AuthContext = createContext({});
 
@@ -29,46 +28,46 @@ export const AuthProvider = ({ children }) => {
     useEffect(() => {
         console.log('[Content-Manager] AuthProvider initializing...');
 
-        // First, try to get auth from localStorage (from shell app)
-        const storedAuth = getAuthFromStorage();
-        console.log('[Content-Manager] Stored auth:', storedAuth);
+        // Listen for auth state from shell
+        const handleMessage = (event) => {
+            // Verify origin (shell is on port 3000)
+            if (event.origin !== 'http://localhost:3000') return;
 
-        if (storedAuth) {
-            setUser(storedAuth);
-            setLoading(false);
-            console.log('[Content-Manager] User set from storage:', storedAuth.email);
-        } else {
-            // If no auth found, keep checking for 5 seconds (in case shell is still loading)
-            let attempts = 0;
-            const maxAttempts = 10; // 10 attempts * 500ms = 5 seconds
+            if (event.data?.type === 'AUTH_STATE') {
+                console.log('[Content-Manager] Received AUTH_STATE:', event.data.user);
+                setUser(event.data.user);
+                setLoading(false);
+            }
+        };
 
-            const checkInterval = setInterval(() => {
-                attempts++;
-                console.log(`[Content-Manager] Checking localStorage (attempt ${attempts})...`);
-                const auth = getAuthFromStorage();
+        window.addEventListener('message', handleMessage);
 
-                if (auth) {
-                    console.log('[Content-Manager] Found auth on attempt', attempts);
-                    setUser(auth);
-                    setLoading(false);
-                    clearInterval(checkInterval);
-                } else if (attempts >= maxAttempts) {
-                    console.log('[Content-Manager] No auth found after', maxAttempts, 'attempts');
-                    setLoading(false);
-                    clearInterval(checkInterval);
-                }
-            }, 500);
+        // Request auth state from shell (Handshake)
+        console.log('[Content-Manager] Sending AUTH_REQUEST to shell');
+        try {
+            window.parent.postMessage({ type: 'AUTH_REQUEST' }, 'http://localhost:3000');
+        } catch (e) {
+            console.warn('[Content-Manager] Failed to post message to parent:', e);
         }
 
-        // Listen for auth changes from shell app
-        const unsubscribe = listenToAuthChanges((authData) => {
-            console.log('[Content-Manager] Auth changed:', authData);
-            setUser(authData);
-            setLoading(false);
+        // Allow direct Firebase login as fallback
+        const firebaseUnsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+            if (firebaseUser && !user) {
+                console.log('[Content-Manager] Firebase auth detected:', firebaseUser.email);
+                setUser(firebaseUser);
+                setLoading(false);
+            }
         });
 
+        // Timeout to stop loading if no auth received
+        const timeout = setTimeout(() => {
+            if (loading) setLoading(false);
+        }, 3000);
+
         return () => {
-            unsubscribe();
+            window.removeEventListener('message', handleMessage);
+            firebaseUnsubscribe();
+            clearTimeout(timeout);
         };
     }, []);
 

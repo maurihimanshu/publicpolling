@@ -10,7 +10,6 @@ import {
     updateProfile
 } from 'firebase/auth';
 import { auth } from '../config/firebase';
-import { saveAuthToStorage } from '../utils/authSync';
 
 const AuthContext = createContext({});
 
@@ -31,9 +30,6 @@ export const AuthProvider = ({ children }) => {
             console.log('[Shell] Auth state changed:', user ? user.email : 'null');
             setUser(user);
             setLoading(false);
-            // Save auth state to localStorage for micro-frontends
-            saveAuthToStorage(user);
-            console.log('[Shell] Saved to storage:', user ? 'yes' : 'cleared');
         });
 
         return unsubscribe;
