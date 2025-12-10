@@ -7,7 +7,7 @@ import './App.css';
 function App() {
     return (
         <AuthProvider>
-            <Router>
+            <Router basename={import.meta.env.BASE_URL}>
                 <div className="app public-viewer-app">
                     <Routes>
                         <Route path="/" element={<Browse />} />

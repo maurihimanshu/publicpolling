@@ -9,13 +9,18 @@ import MicroFrontend from './components/MicroFrontend';
 import './App.css';
 
 // Micro-frontend URLs
-const PUBLIC_VIEWER_URL = import.meta.env.VITE_PUBLIC_VIEWER_URL || 'http://localhost:3001';
-const CONTENT_MANAGER_URL = import.meta.env.VITE_CONTENT_MANAGER_URL || 'http://localhost:3002';
+const PUBLIC_VIEWER_URL = import.meta.env.PROD
+    ? '/publicpolling/public-viewer'
+    : (import.meta.env.VITE_PUBLIC_VIEWER_URL || 'http://localhost:3001');
+
+const CONTENT_MANAGER_URL = import.meta.env.PROD
+    ? '/publicpolling/content-manager'
+    : (import.meta.env.VITE_CONTENT_MANAGER_URL || 'http://localhost:3002');
 
 function App() {
     return (
         <AuthProvider>
-            <Router>
+            <Router basename={import.meta.env.BASE_URL}>
                 <div className="app">
                     <Header />
 

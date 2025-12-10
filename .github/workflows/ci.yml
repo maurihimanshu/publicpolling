@@ -27,12 +27,25 @@ jobs:
           VITE_FIREBASE_APP_ID=${{ secrets.VITE_FIREBASE_APP_ID }}
           VITE_FIREBASE_MEASUREMENT_ID=${{ secrets.VITE_FIREBASE_MEASUREMENT_ID }}
           EOF
+          cp .env.production apps/shell/
+          cp .env.production apps/public-viewer/
+          cp .env.production apps/content-manager/
 
       - name: Install dependencies
         run: npm ci
 
       - name: Build
         run: npm run build:all
+
+      - name: Assemble Deployment Artifact
+        run: |
+          mkdir -p dist
+          cp -r apps/shell/dist/* dist/
+          mkdir -p dist/public-viewer
+          cp -r apps/public-viewer/dist/* dist/public-viewer/
+          mkdir -p dist/content-manager
+          cp -r apps/content-manager/dist/* dist/content-manager/
+          cp dist/index.html dist/404.html
 
       # Example: deploy step (replace with your host's action)
       - name: Deploy to GitHub Pages

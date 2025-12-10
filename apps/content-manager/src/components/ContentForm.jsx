@@ -17,7 +17,6 @@ const ContentForm = ({ initialData, onSubmit, onCancel, loading, isEdit = false 
         trailerUrl: '',
         imageUrl: ''
     });
-    const [imageFile, setImageFile] = useState(null);
     const [imagePreview, setImagePreview] = useState('');
 
     useEffect(() => {
@@ -45,7 +44,6 @@ const ContentForm = ({ initialData, onSubmit, onCancel, loading, isEdit = false 
         // If changing imageUrl, update preview
         if (name === 'imageUrl') {
             setImagePreview(value);
-            setImageFile(null); // Clear file if URL is provided
         }
     };
 
@@ -58,19 +56,6 @@ const ContentForm = ({ initialData, onSubmit, onCancel, loading, isEdit = false 
         }));
     };
 
-    const handleImageChange = (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            setImageFile(file);
-            setFormData(prev => ({ ...prev, imageUrl: '' })); // Clear URL if file is selected
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setImagePreview(reader.result);
-            };
-            reader.readAsDataURL(file);
-        }
-    };
-
     const handleSubmit = (e) => {
         e.preventDefault();
 
@@ -81,7 +66,7 @@ const ContentForm = ({ initialData, onSubmit, onCancel, loading, isEdit = false 
             releaseYear: parseInt(formData.releaseYear)
         };
 
-        onSubmit(submitData, imageFile);
+        onSubmit(submitData);
     };
 
     return (
@@ -239,28 +224,19 @@ const ContentForm = ({ initialData, onSubmit, onCancel, loading, isEdit = false 
                             placeholder="https://example.com/image.jpg"
                             disabled={loading}
                         />
-                        <small className="form-hint">Paste an image URL or upload a file below</small>
-                    </div>
+                        <small className="form-hint">Paste a valid image URL for the cover</small>
 
-                    <div className="form-group">
-                        <label htmlFor="image">Or Upload Image File</label>
-                        <div className="image-upload">
-                            {imagePreview && (
-                                <div className="image-preview">
-                                    <img src={imagePreview} alt="Preview" />
-                                </div>
-                            )}
-                            <input
-                                type="file"
-                                id="image"
-                                accept="image/*"
-                                onChange={handleImageChange}
-                                disabled={loading}
-                            />
-                            <label htmlFor="image" className="file-label">
-                                {imagePreview ? 'Change Image' : 'Upload Image'}
-                            </label>
-                        </div>
+                        {imagePreview && (
+                            <div className="image-preview" style={{ marginTop: '1rem' }}>
+                                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem' }}>Preview:</label>
+                                <img
+                                    src={imagePreview}
+                                    alt="Cover Preview"
+                                    style={{ maxWidth: '200px', borderRadius: '8px', border: '1px solid #444' }}
+                                    onError={(e) => e.target.style.display = 'none'}
+                                />
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>

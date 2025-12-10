@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { collection, addDoc } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { db, storage } from '../config/firebase';
+import { db } from '../config/firebase';
 import { useAuth } from '../contexts/AuthContext';
 import ContentForm from '../components/ContentForm';
 import './AddContent.css';
@@ -13,7 +12,7 @@ const AddContent = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
-    const handleSubmit = async (formData, imageFile) => {
+    const handleSubmit = async (formData) => {
         if (!user) {
             setError('You must be logged in to add content');
             return;
@@ -23,14 +22,8 @@ const AddContent = () => {
         setError('');
 
         try {
-            let imageUrl = formData.imageUrl || ''; // Use URL from form if provided
-
-            // Upload image file only if no URL is provided and file exists
-            if (!imageUrl && imageFile) {
-                const imageRef = ref(storage, `content-images/${Date.now()}_${imageFile.name}`);
-                await uploadBytes(imageRef, imageFile);
-                imageUrl = await getDownloadURL(imageRef);
-            }
+            // Use URL from form directly - no file upload
+            const imageUrl = formData.imageUrl || '';
 
             // Create content document
             const contentData = {
@@ -51,7 +44,12 @@ const AddContent = () => {
             navigate('/');
         } catch (err) {
             console.error('Error adding content:', err);
-            setError(err.message || 'Failed to add content');
+            // Check if it's a permission error
+            if (err.code === 'permission-denied') {
+                setError('Permission denied. Please check your Firestore rules.');
+            } else {
+                setError(err.message || 'Failed to add content');
+            }
         } finally {
             setLoading(false);
         }

@@ -9,10 +9,22 @@ const MicroFrontend = ({ name, host }) => {
     const location = useLocation();
 
     useEffect(() => {
+        // Determine target origin (handle relative paths in prod vs absolute in dev)
+        let targetOrigin = host;
+        if (host.startsWith('/')) {
+            targetOrigin = window.location.origin;
+        } else if (host.startsWith('http')) {
+            try {
+                targetOrigin = new URL(host).origin;
+            } catch (e) {
+                console.error('Invalid host URL:', host);
+            }
+        }
+
         // Send auth state to micro-frontend
         const sendAuthState = () => {
             if (iframeRef.current && iframeRef.current.contentWindow) {
-                console.log(`[Shell] Sending AUTH_STATE to ${name} (${host})`);
+                console.log(`[Shell] Sending AUTH_STATE to ${name} (${targetOrigin})`);
                 try {
                     iframeRef.current.contentWindow.postMessage({
                         type: 'AUTH_STATE',
@@ -22,7 +34,7 @@ const MicroFrontend = ({ name, host }) => {
                             displayName: user.displayName,
                             photoURL: user.photoURL
                         } : null
-                    }, host);
+                    }, targetOrigin);
                 } catch (error) {
                     console.debug('PostMessage error:', error.message);
                 }
@@ -37,7 +49,7 @@ const MicroFrontend = ({ name, host }) => {
 
         // Listen for requests from the micro-frontend
         const handleMessage = (event) => {
-            if (event.origin !== host) return; // Security check
+            if (event.origin !== targetOrigin) return; // Security check
 
             if (event.data?.type === 'AUTH_REQUEST') {
                 console.log(`[Shell] Received AUTH_REQUEST from ${name}`);

@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { db, storage } from '../config/firebase';
+import { db } from '../config/firebase';
 import { useAuth } from '../contexts/AuthContext';
 import ContentForm from '../components/ContentForm';
 import './EditContent.css';
@@ -44,20 +43,13 @@ const EditContent = () => {
         }
     };
 
-    const handleSubmit = async (formData, imageFile) => {
+    const handleSubmit = async (formData) => {
         setLoading(true);
         setError('');
 
         try {
             // Use URL from form if provided, otherwise keep existing
-            let imageUrl = formData.imageUrl || content.imageUrl || '';
-
-            // Upload new image file only if no URL is provided and file exists
-            if (!formData.imageUrl && imageFile) {
-                const imageRef = ref(storage, `content-images/${Date.now()}_${imageFile.name}`);
-                await uploadBytes(imageRef, imageFile);
-                imageUrl = await getDownloadURL(imageRef);
-            }
+            const imageUrl = formData.imageUrl || content.imageUrl || '';
 
             // Update content document
             const contentData = {
@@ -70,7 +62,12 @@ const EditContent = () => {
             navigate('/manage');
         } catch (err) {
             console.error('Error updating content:', err);
-            setError(err.message || 'Failed to update content');
+            // Check if it's a permission error
+            if (err.code === 'permission-denied') {
+                setError('Permission denied. Please check your Firestore rules.');
+            } else {
+                setError(err.message || 'Failed to update content');
+            }
         } finally {
             setLoading(false);
         }

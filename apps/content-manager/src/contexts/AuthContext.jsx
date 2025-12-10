@@ -30,8 +30,9 @@ export const AuthProvider = ({ children }) => {
 
         // Listen for auth state from shell
         const handleMessage = (event) => {
-            // Verify origin (shell is on port 3000)
-            if (event.origin !== 'http://localhost:3000') return;
+            // Verify origin (shell is on port 3000 in dev, or same origin in prod)
+            const allowedOrigins = ['http://localhost:3000', window.location.origin];
+            if (!allowedOrigins.includes(event.origin) && event.origin !== 'https://maurihimanshu.github.io') return;
 
             if (event.data?.type === 'AUTH_STATE') {
                 console.log('[Content-Manager] Received AUTH_STATE:', event.data.user);
@@ -45,7 +46,8 @@ export const AuthProvider = ({ children }) => {
         // Request auth state from shell (Handshake)
         console.log('[Content-Manager] Sending AUTH_REQUEST to shell');
         try {
-            window.parent.postMessage({ type: 'AUTH_REQUEST' }, 'http://localhost:3000');
+            // Target * because we just want to wake up the parent, no sensitive data sent
+            window.parent.postMessage({ type: 'AUTH_REQUEST' }, '*');
         } catch (e) {
             console.warn('[Content-Manager] Failed to post message to parent:', e);
         }
