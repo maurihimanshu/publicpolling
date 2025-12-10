@@ -8,7 +8,7 @@ const ContentCard = ({ content }) => {
         : 0;
 
     return (
-        <Link to={`/browse/${content.id}`} className="content-card">
+        <Link to={`/${content.id}`} className="content-card">
             <div className="card-image">
                 {content.imageUrl ? (
                     <img src={content.imageUrl} alt={content.title} />

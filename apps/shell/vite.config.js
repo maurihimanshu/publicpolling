@@ -1,13 +1,13 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
     plugins: [react()],
-    base: '/publicpolling/',
+    base: mode === 'production' ? '/publicpolling/' : '/',
     server: {
         port: 3000
     },
     build: {
         outDir: 'dist'
     }
-})
+}))

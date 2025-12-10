@@ -1,5 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
+import { collection, addDoc, doc, updateDoc } from 'firebase/firestore';
+import { db } from '../config/firebase';
 import { useAuth } from '../contexts/AuthContext';
 import './MicroFrontend.css';
 
@@ -48,12 +50,40 @@ const MicroFrontend = ({ name, host }) => {
         }
 
         // Listen for requests from the micro-frontend
-        const handleMessage = (event) => {
+        const handleMessage = async (event) => {
             if (event.origin !== targetOrigin) return; // Security check
 
-            if (event.data?.type === 'AUTH_REQUEST') {
+            const { type, payload, requestId } = event.data;
+
+            if (type === 'AUTH_REQUEST') {
                 console.log(`[Shell] Received AUTH_REQUEST from ${name}`);
                 sendAuthState();
+            } else if (type === 'DB_WRITE' && user) {
+                // Handle proxied database writes
+                console.log(`[Shell] Proxying DB Write: ${payload.action}`);
+                try {
+                    if (payload.action === 'add') {
+                        const docRef = await addDoc(collection(db, payload.collection), payload.data);
+                        iframeRef.current.contentWindow.postMessage({
+                            type: 'DB_WRITE_SUCCESS',
+                            requestId,
+                            data: { id: docRef.id }
+                        }, targetOrigin);
+                    } else if (payload.action === 'update') {
+                        await updateDoc(doc(db, payload.collection, payload.id), payload.data);
+                        iframeRef.current.contentWindow.postMessage({
+                            type: 'DB_WRITE_SUCCESS',
+                            requestId
+                        }, targetOrigin);
+                    }
+                } catch (error) {
+                    console.error('[Shell] DB Write Failed:', error);
+                    iframeRef.current.contentWindow.postMessage({
+                        type: 'DB_WRITE_ERROR',
+                        requestId,
+                        error: error.message
+                    }, targetOrigin);
+                }
             }
         };
 

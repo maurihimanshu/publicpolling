@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { collection, addDoc } from 'firebase/firestore';
 import { db } from '../config/firebase';
 import { useAuth } from '../contexts/AuthContext';
 import ContentForm from '../components/ContentForm';
@@ -40,7 +39,44 @@ const AddContent = () => {
                 reviewCount: 0
             };
 
-            await addDoc(collection(db, 'contents'), contentData);
+            // Delegate write to Shell (which is authenticated)
+            const requestId = Date.now().toString();
+
+            // Promise wrapper for the response
+            await new Promise((resolve, reject) => {
+                const handleResponse = (event) => {
+                    const { type, requestId: respId, error } = event.data;
+                    if (respId !== requestId) return;
+
+                    if (type === 'DB_WRITE_SUCCESS') {
+                        window.removeEventListener('message', handleResponse);
+                        resolve();
+                    } else if (type === 'DB_WRITE_ERROR') {
+                        window.removeEventListener('message', handleResponse);
+                        reject(new Error(error));
+                    }
+                };
+
+                window.addEventListener('message', handleResponse);
+
+                // Send request
+                window.parent.postMessage({
+                    type: 'DB_WRITE',
+                    requestId,
+                    payload: {
+                        action: 'add',
+                        collection: 'contents',
+                        data: contentData
+                    }
+                }, '*');
+
+                // Timeout
+                setTimeout(() => {
+                    window.removeEventListener('message', handleResponse);
+                    reject(new Error('Request timed out'));
+                }, 10000);
+            });
+
             navigate('/');
         } catch (err) {
             console.error('Error adding content:', err);
