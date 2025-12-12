@@ -213,12 +213,10 @@ const ContentDetail = () => {
                 <div className="reviews-section">
                     <h2>Reviews ({reviews.length})</h2>
 
-                    {user && (
-                        <AddReview
-                            contentId={id}
-                            onReviewAdded={handleReviewAdded}
-                        />
-                    )}
+                    <AddReview
+                        contentId={id}
+                        onReviewAdded={handleReviewAdded}
+                    />
 
                     <ReviewsList reviews={reviews} />
                 </div>

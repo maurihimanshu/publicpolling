@@ -6,11 +6,46 @@
     margin-bottom: 2rem;
 }
 
+.guest-info-section {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.guest-info-section h4 {
+    margin-bottom: 1rem;
+    color: #e2e8f0;
+}
+
+.form-row {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.form-input {
+    flex: 1;
+    min-width: 200px;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 0.5rem;
+    padding: 0.75rem;
+    color: white;
+}
+
+.form-input:focus,
+.verify-input:focus {
+    outline: none;
+    border-color: #8b5cf6;
+}
+
 .review-header {
     display: flex;
+    justify-content: space-between;
     align-items: center;
     gap: 1rem;
     margin-bottom: 1rem;
+    flex-wrap: wrap;
 }
 
 .add-review .user-avatar {
@@ -23,6 +58,7 @@
     justify-content: center;
     font-weight: 700;
     overflow: hidden;
+    flex-shrink: 0;
 }
 
 .add-review .user-avatar img {
@@ -31,11 +67,27 @@
     object-fit: cover;
 }
 
-.user-name {
-    font-weight: 600;
+.review-meta-inputs {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    margin-left: 1rem;
 }
 
-.add-review textarea {
+.user-name {
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+.rating-input-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    color: #94a3b8;
+}
+
+.review-textarea {
     width: 100%;
     background: rgba(0, 0, 0, 0.3);
     border: 1px solid rgba(255, 255, 255, 0.1);
@@ -49,17 +101,63 @@
     margin-bottom: 1rem;
 }
 
-.add-review textarea:focus {
+.review-textarea:focus {
     outline: none;
     border-color: #8b5cf6;
     box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
 }
 
-.add-review textarea::placeholder {
+.review-textarea::placeholder {
     color: rgba(255, 255, 255, 0.4);
 }
 
-.add-review .btn {
+.bot-verification {
+    background: rgba(139, 92, 246, 0.1);
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    padding: 1rem;
+    border-radius: 0.5rem;
+    margin-bottom: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.verification-input-group {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.verify-input {
+    width: 60px;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 0.25rem;
+    padding: 0.5rem;
+    color: white;
+    text-align: center;
+}
+
+.verify-btn {
+    padding: 0.25rem 0.75rem;
+    font-size: 0.9rem;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    border: none;
+    border-radius: 0.25rem;
+    cursor: pointer;
+}
+
+.verify-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.verification-success {
+    color: #4ade80;
+    margin-bottom: 1rem;
+    font-weight: 500;
+}
+
+.submit-btn {
     margin-left: auto;
     display: block;
 }

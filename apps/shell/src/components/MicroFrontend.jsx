@@ -46,7 +46,8 @@ const MicroFrontend = ({ name, host }) => {
         const iframe = iframeRef.current;
         if (iframe) {
             iframe.addEventListener('load', sendAuthState);
-            sendAuthState();
+            // Removed immediate sendAuthState() to avoid cross-origin errors 
+            // before the iframe has navigated to its target src.
         }
 
         // Listen for requests from the micro-frontend
