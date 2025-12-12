@@ -15,11 +15,11 @@ body {
     background: #0f0f1e;
     color: white;
     line-height: 1.6;
-    min-height: 100vh;
+    min-height: auto;
 }
 
 .app {
-    min-height: 100vh;
+    min-height: auto;
 }
 
 .container {

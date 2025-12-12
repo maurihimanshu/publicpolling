@@ -15,11 +15,13 @@ body {
     background: #0f0f1e;
     color: white;
     line-height: 1.6;
-    min-height: 100vh;
+    /* Removed min-height: 100vh to prevent infinite resize loop in iframe */
+    min-height: auto;
 }
 
 .app {
-    min-height: 100vh;
+    /* Removed min-height: 100vh to prevent infinite resize loop in iframe */
+    min-height: auto;
 }
 
 .container {

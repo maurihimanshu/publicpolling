@@ -9,6 +9,7 @@ import './Browse.css';
 const Browse = () => {
     const [contents, setContents] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedType, setSelectedType] = useState('all');
     const [selectedGenre, setSelectedGenre] = useState('all');
@@ -20,7 +21,9 @@ const Browse = () => {
 
     const fetchContents = async () => {
         setLoading(true);
+        setError(null);
         try {
+            console.log('Fetching contents...');
             let q = query(
                 collection(db, 'contents'),
                 orderBy(sortBy === 'newest' ? 'createdAt' : 'ratings.average', 'desc'),
@@ -37,6 +40,8 @@ const Browse = () => {
             }
 
             const querySnapshot = await getDocs(q);
+            console.log('Snapshot size:', querySnapshot.size);
+
             const contentsData = querySnapshot.docs.map(doc => ({
                 id: doc.id,
                 ...doc.data()
@@ -45,6 +50,7 @@ const Browse = () => {
             setContents(contentsData);
         } catch (error) {
             console.error('Error fetching contents:', error);
+            setError(error.message || 'Failed to fetch content');
         } finally {
             setLoading(false);
         }
@@ -58,11 +64,28 @@ const Browse = () => {
     });
 
     if (loading && contents.length === 0) {
-        // Only show full page loader if we have no content yet
         return (
             <div className="loading-state">
                 <div className="spinner"></div>
                 <p>Loading content...</p>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="browse-page">
+                <div className="container">
+                    <header className="browse-header">
+                        <h1 className="page-title">Browse Entertainment</h1>
+                    </header>
+                    <div className="error-state" style={{ textAlign: 'center', padding: '4rem' }}>
+                        <span style={{ fontSize: '3rem', display: 'block', marginBottom: '1rem' }}>⚠️</span>
+                        <h3>Unable to load content</h3>
+                        <p style={{ color: '#ff6b6b' }}>Error: {error}</p>
+                        <button onClick={fetchContents} className="btn btn-primary" style={{ marginTop: '1rem' }}>Retry Connection</button>
+                    </div>
+                </div>
             </div>
         );
     }
@@ -74,17 +97,6 @@ const Browse = () => {
                     <h1 className="page-title">Browse Entertainment</h1>
                     <p className="page-subtitle">Discover movies, series, cartoons, and more</p>
                 </header>
-
-                {contents.length === 0 && !loading && (
-                    <div className="error-state" style={{ textAlign: 'center', padding: '2rem' }}>
-                        <p>Unable to load content. Please check your connection.</p>
-                        <button onClick={fetchContents} className="btn btn-primary">Retry</button>
-                    </div>
-                )}
-
-                {/* SearchBar and FilterBar should handle their own rendering or be hidden if critical error? 
-                    Actually, let's keep them visible so user can try searching. 
-                */}
 
                 <SearchBar
                     searchTerm={searchTerm}
@@ -100,28 +112,25 @@ const Browse = () => {
                     onSortChange={setSortBy}
                 />
 
-                {loading ? (
-                    <div className="loading-state">
-                        <div className="spinner"></div>
-                        <p>Loading content...</p>
-                    </div>
-                ) : filteredContents.length === 0 ? (
+                {filteredContents.length === 0 ? (
                     <div className="empty-state">
                         <span className="empty-icon">🎬</span>
                         <h3>No content found</h3>
                         <p>
                             {searchTerm || selectedType !== 'all' || selectedGenre !== 'all'
                                 ? 'Try adjusting your search or filters'
-                                : 'The database is empty. Be the first to add entertainment content!'}
+                                : 'The database is empty.'}
                         </p>
+                        {contents.length === 0 && (
+                            <div className="debug-info" style={{ marginTop: '2rem', fontSize: '0.8rem', opacity: 0.5 }}>
+                                Debug: Firestore returned 0 documents from "contents" collection.
+                            </div>
+                        )}
                         {!searchTerm && selectedType === 'all' && selectedGenre === 'all' && (
                             <div className="empty-actions">
                                 <a href="/login" className="btn btn-primary">
                                     Sign In to Add Content
                                 </a>
-                                <p className="empty-hint">
-                                    💡 Tip: Create an account to add movies, series, cartoons, and more!
-                                </p>
                             </div>
                         )}
                     </div>
