@@ -1,20 +1,32 @@
-name: CI - build and deploy
+name: Build and Deploy
 
 on:
   push:
     branches:
       - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout Repository
+        uses: actions/checkout@v4
 
-      - name: Use Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "20"
+          cache: 'npm'
 
       - name: Create .env.production from secrets
         run: |
@@ -34,22 +46,60 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build
+      - name: Build All Apps
         run: npm run build:all
 
       - name: Assemble Deployment Artifact
         run: |
           mkdir -p dist
+          # Copy Shell (Root)
           cp -r apps/shell/dist/* dist/
+          
+          # Copy Public Viewer (Subpath)
           mkdir -p dist/public-viewer
           cp -r apps/public-viewer/dist/* dist/public-viewer/
+          
+          # Copy Content Manager (Subpath)
           mkdir -p dist/content-manager
           cp -r apps/content-manager/dist/* dist/content-manager/
+          
+          # SPA Fallback
           cp dist/index.html dist/404.html
+          
+          echo "Dist folder contents:"
+          ls -R dist
 
-      # Example: deploy step (replace with your host's action)
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
+      - name: Verify Build Output
+        run: |
+          echo "Verifying dist/index.html..."
+          if grep -q "/src/main.jsx" dist/index.html; then
+            echo "❌ ERROR: dist/index.html still references /src/main.jsx!"
+            exit 1
+          fi
+          
+          echo "Verifying base path in assets..."
+          # We expect /publicpolling/assets/ because base in vite.config.js is /publicpolling/
+          if grep -q '/publicpolling/assets/' dist/index.html; then
+             echo "✅ Base path verified: /publicpolling/assets/ found."
+          else
+             echo "❌ ERROR: Base path seems incorrect. Expected /publicpolling/assets/..."
+             echo "Found asset references:"
+             grep -o 'src="[^"]*"' dist/index.html || true
+             exit 1
+          fi
+
+      - name: Upload Pages Artifact
+        uses: actions/upload-pages-artifact@v3
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./dist
+          path: dist
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
