@@ -3,9 +3,12 @@ import { AuthProvider } from './contexts/AuthContext';
 import Dashboard from './pages/Dashboard';
 import AddContent from './pages/AddContent';
 import EditContent from './pages/EditContent';
+import { useContentHeight } from './hooks/useContentHeight';
 import './App.css';
 
 function App() {
+    useContentHeight();
+
     return (
         <AuthProvider>
             <Router basename={import.meta.env.BASE_URL}>

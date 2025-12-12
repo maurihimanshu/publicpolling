@@ -2,9 +2,12 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import Browse from './pages/Browse';
 import ContentDetail from './pages/ContentDetail';
+import { useContentHeight } from './hooks/useContentHeight';
 import './App.css';
 
 function App() {
+    useContentHeight();
+
     return (
         <AuthProvider>
             <Router basename={import.meta.env.BASE_URL}>

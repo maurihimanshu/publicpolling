@@ -57,6 +57,16 @@ const Browse = () => {
         return matchesSearch && matchesGenre;
     });
 
+    if (loading && contents.length === 0) {
+        // Only show full page loader if we have no content yet
+        return (
+            <div className="loading-state">
+                <div className="spinner"></div>
+                <p>Loading content...</p>
+            </div>
+        );
+    }
+
     return (
         <div className="browse-page">
             <div className="container">
@@ -64,6 +74,17 @@ const Browse = () => {
                     <h1 className="page-title">Browse Entertainment</h1>
                     <p className="page-subtitle">Discover movies, series, cartoons, and more</p>
                 </header>
+
+                {contents.length === 0 && !loading && (
+                    <div className="error-state" style={{ textAlign: 'center', padding: '2rem' }}>
+                        <p>Unable to load content. Please check your connection.</p>
+                        <button onClick={fetchContents} className="btn btn-primary">Retry</button>
+                    </div>
+                )}
+
+                {/* SearchBar and FilterBar should handle their own rendering or be hidden if critical error? 
+                    Actually, let's keep them visible so user can try searching. 
+                */}
 
                 <SearchBar
                     searchTerm={searchTerm}
