@@ -10,7 +10,7 @@ const Signup = () => {
     const [confirmPassword, setConfirmPassword] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
-    const { signUp, signInWithGoogle, signInWithGithub } = useAuth();
+    const { signUp } = useAuth();
     const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
@@ -35,30 +35,6 @@ const Signup = () => {
             setError(result.error);
         }
 
-        setLoading(false);
-    };
-
-    const handleGoogleSignIn = async () => {
-        setError('');
-        setLoading(true);
-        const result = await signInWithGoogle();
-        if (result.success) {
-            navigate('/manage');
-        } else {
-            setError(result.error);
-        }
-        setLoading(false);
-    };
-
-    const handleGithubSignIn = async () => {
-        setError('');
-        setLoading(true);
-        const result = await signInWithGithub();
-        if (result.success) {
-            navigate('/manage');
-        } else {
-            setError(result.error);
-        }
         setLoading(false);
     };
 
@@ -137,27 +113,6 @@ const Signup = () => {
                             {loading ? 'Creating account...' : 'Sign Up'}
                         </button>
                     </form>
-
-                    <div className="divider">
-                        <span>or continue with</span>
-                    </div>
-
-                    <div className="social-buttons">
-                        <button
-                            onClick={handleGoogleSignIn}
-                            className="btn btn-social"
-                            disabled={loading}
-                        >
-                            <span>🔐</span> Google
-                        </button>
-                        <button
-                            onClick={handleGithubSignIn}
-                            className="btn btn-social"
-                            disabled={loading}
-                        >
-                            <span>🐙</span> GitHub
-                        </button>
-                    </div>
 
                     <p className="auth-footer">
                         Already have an account? <Link to="/login">Sign in</Link>
